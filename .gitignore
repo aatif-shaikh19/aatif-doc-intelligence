@@ -6,3 +6,8 @@ backend/vector_store/
 .env
 docs/
 CLAUDE.md
+notes.txt
+test.pdf
+Photo.pdf
+corrupt.pdf
+protected.pdf

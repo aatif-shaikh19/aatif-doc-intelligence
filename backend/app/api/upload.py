@@ -1,4 +1,5 @@
 import logging
+import shutil
 import uuid
 from pathlib import Path
 
@@ -6,6 +7,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.models.registry import registry
 from app.models.schemas import UploadResponse, UploadResult
+from app.services.parser import PDFParseError, extract_pages
 from app.utils.config import (
     ALLOWED_UPLOAD_EXTENSIONS,
     MAX_FILE_SIZE_BYTES,
@@ -30,6 +32,10 @@ def _save_file(doc_id: str, filename: str, content: bytes) -> Path:
     file_path = doc_dir / Path(filename).name
     file_path.write_bytes(content)
     return file_path
+
+
+def _delete_saved_file(doc_id: str) -> None:
+    shutil.rmtree(UPLOAD_DIR / doc_id, ignore_errors=True)
 
 
 async def _process_upload(upload: UploadFile) -> UploadResult:
@@ -57,14 +63,28 @@ async def _process_upload(upload: UploadFile) -> UploadResult:
 
     doc_id = str(uuid.uuid4())
     try:
-        _save_file(doc_id, filename, content)
+        file_path = _save_file(doc_id, filename, content)
     except OSError:
         logger.error("Failed to save %s (doc_id=%s)", filename, doc_id, exc_info=True)
         return UploadResult(filename=filename, status="rejected", reason="could not save file")
 
-    registry.add(doc_id=doc_id, filename=filename)
+    try:
+        pages = extract_pages(str(file_path), doc_id, filename)
+    except PDFParseError as exc:
+        _delete_saved_file(doc_id)
+        logger.warning("Rejected %s: %s", filename, exc)
+        return UploadResult(filename=filename, status="rejected", reason=str(exc))
+
+    page_count = len(pages)
+    character_count = sum(page.character_count for page in pages)
+    registry.add(
+        doc_id=doc_id,
+        filename=filename,
+        page_count=page_count,
+        character_count=character_count,
+    )
     logger.info("File saved: %s -> doc_id=%s", filename, doc_id)
-    return UploadResult(filename=filename, doc_id=doc_id, status="success")
+    return UploadResult(filename=filename, doc_id=doc_id, status="success", pages=page_count)
 
 
 @router.post("/upload", response_model=UploadResponse)

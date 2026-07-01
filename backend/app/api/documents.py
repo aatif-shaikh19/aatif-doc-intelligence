@@ -14,7 +14,12 @@ router = APIRouter()
 def list_documents() -> DocumentsResponse:
     records = registry.list_all()
     documents = [
-        DocumentInfo(doc_id=r.doc_id, filename=r.filename, uploaded_at=r.uploaded_at)
+        DocumentInfo(
+            doc_id=r.doc_id,
+            filename=r.filename,
+            uploaded_at=r.uploaded_at,
+            pages=r.page_count,
+        )
         for r in records
     ]
     logger.info("Listed %d document(s)", len(documents))

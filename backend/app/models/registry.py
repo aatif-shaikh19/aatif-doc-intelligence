@@ -11,6 +11,8 @@ class DocumentRecord:
     doc_id: str
     filename: str
     uploaded_at: datetime
+    page_count: int | None = None
+    character_count: int | None = None
 
 
 class DocumentRegistry:
@@ -24,11 +26,19 @@ class DocumentRegistry:
         self._documents: dict[str, DocumentRecord] = {}
         self._lock = Lock()
 
-    def add(self, doc_id: str, filename: str) -> DocumentRecord:
+    def add(
+        self,
+        doc_id: str,
+        filename: str,
+        page_count: int | None = None,
+        character_count: int | None = None,
+    ) -> DocumentRecord:
         record = DocumentRecord(
             doc_id=doc_id,
             filename=filename,
             uploaded_at=datetime.now(timezone.utc),
+            page_count=page_count,
+            character_count=character_count,
         )
         with self._lock:
             self._documents[doc_id] = record

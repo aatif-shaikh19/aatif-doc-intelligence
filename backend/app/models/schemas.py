@@ -9,9 +9,8 @@ class UploadResult(BaseModel):
     doc_id: Optional[str] = None
     status: Literal["success", "rejected"]
     reason: Optional[str] = None
-    # Populated starting Phase 3/4 (parsing/chunking); absent for now.
-    pages: Optional[int] = None
-    chunks: Optional[int] = None
+    pages: Optional[int] = None  # populated by the parser (Phase 3)
+    chunks: Optional[int] = None  # populated by the chunker (Phase 4); absent for now
 
 
 class UploadResponse(BaseModel):
@@ -22,10 +21,17 @@ class DocumentInfo(BaseModel):
     doc_id: str
     filename: str
     uploaded_at: datetime
-    # Populated starting Phase 3/4 (parsing/chunking); absent for now.
-    pages: Optional[int] = None
-    chunks: Optional[int] = None
+    pages: Optional[int] = None  # populated by the parser (Phase 3)
+    chunks: Optional[int] = None  # populated by the chunker (Phase 4); absent for now
 
 
 class DocumentsResponse(BaseModel):
     documents: list[DocumentInfo]
+
+
+class ParsedPage(BaseModel):
+    doc_id: str
+    filename: str
+    page_number: int
+    text: str
+    character_count: int
