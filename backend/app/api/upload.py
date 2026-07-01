@@ -7,6 +7,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.models.registry import registry
 from app.models.schemas import UploadResponse, UploadResult
+from app.services.chunker import ChunkingError, chunk_document
 from app.services.parser import PDFParseError, extract_pages
 from app.utils.config import (
     ALLOWED_UPLOAD_EXTENSIONS,
@@ -75,16 +76,31 @@ async def _process_upload(upload: UploadFile) -> UploadResult:
         logger.warning("Rejected %s: %s", filename, exc)
         return UploadResult(filename=filename, status="rejected", reason=str(exc))
 
+    try:
+        chunks = chunk_document(pages)
+    except ChunkingError as exc:
+        _delete_saved_file(doc_id)
+        logger.warning("Rejected %s: %s", filename, exc)
+        return UploadResult(filename=filename, status="rejected", reason=str(exc))
+
     page_count = len(pages)
+    chunk_count = len(chunks)
     character_count = sum(page.character_count for page in pages)
     registry.add(
         doc_id=doc_id,
         filename=filename,
         page_count=page_count,
         character_count=character_count,
+        chunk_count=chunk_count,
     )
     logger.info("File saved: %s -> doc_id=%s", filename, doc_id)
-    return UploadResult(filename=filename, doc_id=doc_id, status="success", pages=page_count)
+    return UploadResult(
+        filename=filename,
+        doc_id=doc_id,
+        status="success",
+        pages=page_count,
+        chunks=chunk_count,
+    )
 
 
 @router.post("/upload", response_model=UploadResponse)

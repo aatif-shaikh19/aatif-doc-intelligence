@@ -13,6 +13,7 @@ class DocumentRecord:
     uploaded_at: datetime
     page_count: int | None = None
     character_count: int | None = None
+    chunk_count: int | None = None
 
 
 class DocumentRegistry:
@@ -32,6 +33,7 @@ class DocumentRegistry:
         filename: str,
         page_count: int | None = None,
         character_count: int | None = None,
+        chunk_count: int | None = None,
     ) -> DocumentRecord:
         record = DocumentRecord(
             doc_id=doc_id,
@@ -39,6 +41,7 @@ class DocumentRegistry:
             uploaded_at=datetime.now(timezone.utc),
             page_count=page_count,
             character_count=character_count,
+            chunk_count=chunk_count,
         )
         with self._lock:
             self._documents[doc_id] = record

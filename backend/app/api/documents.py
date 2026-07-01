@@ -19,6 +19,7 @@ def list_documents() -> DocumentsResponse:
             filename=r.filename,
             uploaded_at=r.uploaded_at,
             pages=r.page_count,
+            chunks=r.chunk_count,
         )
         for r in records
     ]
