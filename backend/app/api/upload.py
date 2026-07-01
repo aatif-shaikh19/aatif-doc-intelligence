@@ -8,7 +8,9 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from app.models.registry import registry
 from app.models.schemas import UploadResponse, UploadResult
 from app.services.chunker import ChunkingError, chunk_document
+from app.services.embeddings import embed_chunks
 from app.services.parser import PDFParseError, extract_pages
+from app.services.vector_store import vector_store
 from app.utils.config import (
     ALLOWED_UPLOAD_EXTENSIONS,
     MAX_FILE_SIZE_BYTES,
@@ -82,6 +84,14 @@ async def _process_upload(upload: UploadFile) -> UploadResult:
         _delete_saved_file(doc_id)
         logger.warning("Rejected %s: %s", filename, exc)
         return UploadResult(filename=filename, status="rejected", reason=str(exc))
+
+    try:
+        vectors = embed_chunks(chunks)
+        vector_store.add(chunks, vectors)
+    except Exception:
+        _delete_saved_file(doc_id)
+        logger.error("Embedding failed for %s", filename, exc_info=True)
+        return UploadResult(filename=filename, status="rejected", reason="embedding failed")
 
     page_count = len(pages)
     chunk_count = len(chunks)
