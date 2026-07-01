@@ -28,7 +28,7 @@ def get_model() -> SentenceTransformer:
         _model = SentenceTransformer(MODEL_NAME)
         device = "GPU" if "cuda" in str(_model.device).lower() else "CPU"
         logger.info("Embedding model loaded: %s", MODEL_NAME)
-        logger.info("Dimension: %d", _model.get_sentence_embedding_dimension())
+        logger.info("Dimension: %d", _model.get_embedding_dimension())
         logger.info("Device: %s", device)
     return _model
 
