@@ -10,7 +10,7 @@ from app.services.vector_store import vector_store
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_SIMILARITY_THRESHOLD = float(os.getenv("RETRIEVAL_SIMILARITY_THRESHOLD", "0.35"))
+DEFAULT_SIMILARITY_THRESHOLD = float(os.getenv("RETRIEVAL_SIMILARITY_THRESHOLD", "0.25"))
 
 
 class RetrievalError(Exception):

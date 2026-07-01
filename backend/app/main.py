@@ -5,11 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import documents, query, upload
 from app.services.embeddings import get_model
+from app.services.llm import validate_groq_configuration
 from app.services.vector_store import vector_store
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    validate_groq_configuration()
     get_model()
     vector_store.load()
     yield
