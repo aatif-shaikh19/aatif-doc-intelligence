@@ -1,0 +1,8 @@
+__pycache__/
+.venv/
+node_modules/
+backend/uploads/
+backend/vector_store/
+.env
+docs/
+CLAUDE.md
