@@ -21,7 +21,7 @@ app = FastAPI(title="Document Intelligence API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5176"],
+    allow_origins=["http://localhost:5175"],
     allow_methods=["*"],
     allow_headers=["*"],
 )

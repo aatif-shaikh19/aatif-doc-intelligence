@@ -56,5 +56,12 @@ class DocumentRegistry:
         with self._lock:
             return list(self._documents.values())
 
+    def remove(self, doc_id: str) -> DocumentRecord | None:
+        with self._lock:
+            record = self._documents.pop(doc_id, None)
+        if record is not None:
+            logger.info("Removed document doc_id=%s filename=%s", doc_id, record.filename)
+        return record
+
 
 registry = DocumentRegistry()

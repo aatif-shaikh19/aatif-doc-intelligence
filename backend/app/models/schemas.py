@@ -29,6 +29,11 @@ class DocumentsResponse(BaseModel):
     documents: list[DocumentInfo]
 
 
+class DeleteDocumentResponse(BaseModel):
+    doc_id: str
+    status: Literal["deleted"]
+
+
 class ParsedPage(BaseModel):
     doc_id: str
     filename: str
